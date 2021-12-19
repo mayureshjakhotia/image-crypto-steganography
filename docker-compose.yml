@@ -1,0 +1,33 @@
+version: "3.7"
+
+networks:
+  image_crypto_steganography:
+    attachable: true
+    name: image_crypto_steganography
+
+services:
+  localstack:
+    image: "localstack/localstack:latest"
+    networks:
+      - image_crypto_steganography
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./resources/lambda-layer.zip:/resources/lambda-layer.zip
+      - ./resources/.env:/resources/.env
+      - ./resources/test_image.png:/resources/test_image.png
+      - ./resources/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      SERVICES: "lambda, sqs, s3"
+      DEBUG: 1
+      DEFAULT_REGION: "us-east-1"
+      LAMBDA_EXECUTOR: "docker"
+      LAMBDA_REMOTE_DOCKER: "true"
+#      LAMBDA_REMOVE_CONTAINERS: "true"
+      DATA_DIR: "/tmp/localstack/data"
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+      LAMBDA_DOCKER_NETWORK: "image_crypto_steganography"
+      HOST_TMP_FOLDER: ${TMPDIR}
+      AWS_ACCESS_KEY_ID: "fake_key_id"
+      AWS_SECRET_ACCESS_KEY: "fake_secret_access_key"
