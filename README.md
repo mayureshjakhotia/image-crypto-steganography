@@ -7,7 +7,7 @@ services locally.
 
 ## Prerequisites
 
-- [python](https://docs.python.org/3/using/index.html) (version 3.8)
+- [python](https://docs.python.org/3/using/index.html) (version 3.7+)
 - [pip](https://pip.pypa.io/en/stable/installation/)
 - [docker](https://docs.docker.com/get-docker/)
 - [docker-compose](https://docs.docker.com/compose/install/) (version 1.29.2+)
@@ -31,9 +31,9 @@ There are two ways to run the application locally.
    * Install required dependencies locally by running `pip install -r requirements.txt`
    * Export the following environment variables:
      ```
-     $ export AWS_ENDPOINT_URL=http://0.0.0.0:4566
-     $ export AWS_ACCESS_KEY_ID=fake_access
-     $ export AWS_SECRET_ACCESS_KEY=fake_secret
+     AWS_ENDPOINT_URL=http://0.0.0.0:4566
+     AWS_ACCESS_KEY_ID=fake_access
+     AWS_SECRET_ACCESS_KEY=fake_secret
      ```      
    * `make run` - deploys localstack container. This step only creates the S3 bucket resource and uploads a test image 
      to the S3 bucket.
