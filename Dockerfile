@@ -1,5 +1,7 @@
 FROM lambci/lambda:build-python3.7
 
+USER root
+
 ENV REQPATH /root/requirements.txt
 COPY ./requirements.txt /root/requirements.txt
 RUN pip3 install -r ${REQPATH} --target=/opt/python/root/

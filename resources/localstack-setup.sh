@@ -10,7 +10,7 @@ ZIP_FILE=/resources/lambda-layer.zip
 if [ -f "$ZIP_FILE" ]; then
 echo "$ZIP_FILE exists."
 
-echo "Creating required lambda function"
+echo "Creating the lambda function to encrypt text within image"
 awslocal lambda create-function --function-name encrypt_image_with_secret_text \
     --zip-file fileb:///resources/lambda-layer.zip \
     --handler main.encrypt_image_with_secret_text \
@@ -19,7 +19,7 @@ awslocal lambda create-function --function-name encrypt_image_with_secret_text \
     --role whatever
 
 
-echo "Creating required lambda function"
+echo "Creating the lambda function to retrieve text from image"
 awslocal lambda create-function --function-name get_secret_text_from_encrypted_image \
     --zip-file fileb:///resources/lambda-layer.zip \
     --handler main.get_secret_text_from_encrypted_image \
@@ -38,7 +38,5 @@ echo "Trigger encryption lambda by sending a message to the SQS"
 awslocal sqs send-message --queue-url http://localhost:4566/000000000000/image_steganography_queue --message-body '{"image_path":"s3://images/test_image.png", "secret_text": "This is a secret text", "secret_password_key": "my_pwd"}'
 
 else
-    echo "$ZIP_FILE does not exist ie. triggered via PyCharm."
+    echo "$ZIP_FILE does not exist ie. triggered directly via Python."
 fi
-
-
