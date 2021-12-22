@@ -1,7 +1,7 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='image-crypto-steganography',
     version='0.1',
-    description='An application that creates an image with encrypted hidden text message'
+    description='An application that creates a concealed image with encrypted text message'
 )
