@@ -32,34 +32,34 @@ def _add_secret_text_to_image(s3_input_image_path, secret_text, secret_password_
     input_image = key.split('/')[-1]
     s3_client.download_file(bucket, key, f'/tmp/{input_image}')
 
-    # Encrypt the image with the secret message (using the secret password key)
+    # Conceal the image with the secret message (using the secret password key)
     crypto_steganography = CryptoSteganography(secret_password_key)
-    output_image = f'encrypted_{input_image}'
-    logger.info(f'Encrypting {input_image} with the secret message')
+    output_image = f'concealed_{input_image}'
+    logger.info(f'Concealing {input_image} with the secret message')
     crypto_steganography.hide(f'/tmp/{input_image}', f'/tmp/{output_image}', secret_text)
 
-    # Upload the new encrypted image to s3
+    # Upload the new concealed image to s3
     s3_client.upload_file(f'/tmp/{output_image}', 'images', output_image)
     return f"s3://images/{output_image}"
 
 
-def _retrieve_secret_text_from_encrypted_image(encrypted_s3_image_path, secret_password_key):
-    # Download encrypted s3 image locally
-    bucket, key = _parse_s3_uri(encrypted_s3_image_path)
-    encrypted_image = key.split('/')[-1]
-    s3_client.download_file(bucket, key, f'/tmp/{encrypted_image}')
+def _retrieve_secret_text_from_concealed_image(concealed_s3_image_path, secret_password_key):
+    # Download concealed s3 image locally
+    bucket, key = _parse_s3_uri(concealed_s3_image_path)
+    concealed_image = key.split('/')[-1]
+    s3_client.download_file(bucket, key, f'/tmp/{concealed_image}')
 
-    # Retrieve the encrypted text using the secret password key
+    # Retrieve the decrypted text using the secret password key
     crypto_steganography = CryptoSteganography(secret_password_key)
-    secret_text = crypto_steganography.retrieve(f'/tmp/{encrypted_image}')
+    secret_text = crypto_steganography.retrieve(f'/tmp/{concealed_image}')
 
     return secret_text
 
 
-def encrypt_image_with_secret_text(event, context):
+def conceal_image_with_secret_text(event, context):
     """
     This handler receives the input s3 image location, the secret text and the secret password key in an SQS message. It
-    will create a steganographed image containing the encrypted text and save it to s3 with the prefix 'encrypted_'.
+    will create a steganographed image containing the encrypted text and save it to s3 with the prefix 'concealed_'.
     """
     message_body = _parse_message_from_sqs(event)
     input_image_path = message_body['image_path']
@@ -67,19 +67,19 @@ def encrypt_image_with_secret_text(event, context):
     secret_password_key = message_body['secret_password_key']
 
     output_image_path = _add_secret_text_to_image(input_image_path, secret_text, secret_password_key)
-    logger.info(f'Uploaded the encrypted image to {output_image_path}')
+    logger.info(f'Uploaded the concealed image to {output_image_path}')
 
 
-def get_secret_text_from_encrypted_image(event, context):
+def get_secret_text_from_concealed_image(event, context):
     """
-    This handler receives the encrypted s3 image and the secret password key. It retrieves the secret text that is
-    hidden in the encrypted image.
+    This handler receives the steganographed s3 image and the secret password key. It retrieves the decrypted secret
+    text that is hidden in the image.
     """
-    encrypted_image_path = event['image_path']
+    concealed_image_path = event['image_path']
     secret_password_key = event['secret_password_key']
 
-    secret_text = _retrieve_secret_text_from_encrypted_image(encrypted_image_path, secret_password_key)
-    logger.info(f'Secret text retrieved from {encrypted_image_path}: {secret_text}')
+    secret_text = _retrieve_secret_text_from_concealed_image(concealed_image_path, secret_password_key)
+    logger.info(f'Secret text retrieved from {concealed_image_path}: {secret_text}')
 
     return {'secret_text': secret_text}
 
@@ -87,6 +87,6 @@ def get_secret_text_from_encrypted_image(event, context):
 # # Note: This method is just added in order to test directly with Python
 # if __name__ == '__main__':
 #     # hide text data in an encrypted format inside an image
-#     encrypt_image_with_secret_text(event={'Records': [{'body': '{"image_path":"s3://images/test_image.png", "secret_text": "This is a secret text", "secret_password_key": "my_pwd"}'}]}, context=None)
-#     # get the decrypted text data from an image
-#     get_secret_text_from_encrypted_image(event={"image_path": "s3://images/encrypted_test_image.png", "secret_password_key": "my_pwd"}, context=None)
+#     conceal_image_with_secret_text(event={'Records': [{'body': '{"image_path":"s3://images/test_image.png", "secret_text": "This is a secret text", "secret_password_key": "my_pwd"}'}]}, context=None)
+#     # get the decrypted text data from the concealed image
+#     get_secret_text_from_concealed_image(event={"image_path": "s3://images/concealed_test_image.png", "secret_password_key": "my_pwd"}, context=None)
